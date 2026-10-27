@@ -22,12 +22,10 @@
 }
 
 html {
-  min-width: 320px;
   min-height: 100%;
 }
 
 body {
-  min-width: 320px;
   min-height: 100vh;
   margin: 0;
   background: var(--page);
@@ -571,35 +569,32 @@ td small {
   }
 
   .sidebar {
-    position: sticky;
-    z-index: 5;
-    top: 0;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
     width: 100%;
     min-height: 0;
-    padding: 8px 10px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
+    padding: 10px;
+    overflow: visible;
+    gap: 6px;
     box-shadow: 0 2px 10px rgba(7, 24, 39, 0.12);
-    -webkit-overflow-scrolling: touch;
   }
 
   .brand {
-    flex: 0 0 148px;
+    grid-column: 1 / -1;
+    flex: initial;
     flex-direction: row;
     gap: 8px;
     min-height: 0;
-    margin: 0 4px 0 0;
-    padding: 4px 8px 4px 0;
-    border: 0;
+    margin: 0 0 4px;
+    padding: 6px 4px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
     text-align: left;
   }
 
   .brand-logo {
-    width: 42px;
-    height: 42px;
+    width: 48px;
+    height: 48px;
     border-radius: 8px;
   }
 
@@ -612,10 +607,12 @@ td small {
   }
 
   .nav {
-    width: auto;
+    width: 100%;
+    min-width: 0;
     min-height: 40px;
-    margin: 0 3px;
+    margin: 0;
     padding: 9px 10px;
+    white-space: normal;
   }
 
   .main {
@@ -709,16 +706,16 @@ td small {
 
 @media (max-width: 380px) {
   .brand {
-    flex-basis: 132px;
+    gap: 10px;
   }
 
   .brand-copy {
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .nav {
-    padding-right: 8px;
-    padding-left: 8px;
+    padding-right: 9px;
+    padding-left: 9px;
     font-size: 12px;
   }
 
