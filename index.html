@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="D Anmol Enterprises student management dashboard for admissions, attendance, fees, and course tracking.">
+<meta name="theme-color" content="#087c22">
+<title>Institute Admin Dashboard</title>
+<link rel="stylesheet" href="styles.css?v=7">
+</head>
+<body>
+<div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
+<div class="app"><aside class="sidebar">
+  <div class="brand"><img class="brand-logo" src="assets/d-anmol-logo.png" alt="D Anmol Enterprises logo"><div class="brand-copy">D Anmol Enterprises<small>Institute Management</small></div></div>
+  <button class="nav active" data-page="dashboard">▦ &nbsp; Dashboard</button>
+  <button class="nav" data-page="students">♙ &nbsp; Students</button>
+  <button class="nav" data-page="courses">▤ &nbsp; Courses</button>
+  <button class="nav" data-page="attendance">✓ &nbsp; Attendance</button>
+  <button class="nav" data-page="fees">₹ &nbsp; Fees & EMI</button>
+</aside>
+<main class="main">
+  <div class="top"><div><h1 id="pageTitle">Dashboard</h1><div class="sub">Manage students, courses, attendance and fee payments</div></div><button class="btn" onclick="openStudent()">＋ Add Student</button></div>
+
+  <section id="page-dashboard" class="page">
+    <div class="cards">
+      <div class="card"><div class="metric">Total Students</div><div class="value" id="mStudents">0</div></div>
+      <div class="card"><div class="metric">Active Students</div><div class="value" id="mActive">0</div></div>
+      <div class="card"><div class="metric">Fees Collected</div><div class="value" id="mCollected">₹0</div></div>
+      <div class="card"><div class="metric">Fees Pending</div><div class="value" id="mPending">₹0</div></div>
+    </div>
+    <div class="panel"><div class="sectionhead"><h2>Recent Students</h2><button class="btn secondary" onclick="showPage('students')">View all</button></div><div id="recentTable"></div></div>
+    <p class="hint">Demo note: this version saves data in this browser on this device. Use Export Backup regularly. For multi-device/online use, connect a shared database before using it for real student records.</p>
+  </section>
+
+  <section id="page-students" class="page hidden">
+    <div class="toolbar"><input id="studentSearch" placeholder="Search name, phone, email, course..." oninput="renderStudents()"><select id="courseFilter" onchange="renderStudents()"><option value="">All courses</option></select><button class="btn" onclick="openStudent()">＋ Add New</button><button class="btn secondary" onclick="document.getElementById('excelFile').click()">Import Excel</button><input id="excelFile" type="file" accept=".xlsx,.xls,.csv" class="hidden" onchange="importExcel(event)"><button class="btn secondary" onclick="downloadExcelTemplate()">Download Excel Template</button><button class="btn secondary" onclick="document.getElementById('importFile').click()">Import JSON Backup</button><input id="importFile" type="file" accept=".json,application/json" class="hidden" onchange="importBackup(event)"><button class="btn secondary" onclick="exportBackup()">Export JSON Backup</button></div>
+    <div class="tablewrap" id="studentsTable"></div>
+  </section>
+
+  <section id="page-courses" class="page hidden">
+    <div class="panel"><h2>Add / Update Course</h2><div class="formgrid">
+      <div class="field"><label>Course Name *</label><input id="courseName" placeholder="e.g. Python"></div>
+      <div class="field"><label>Duration</label><input id="courseDuration" placeholder="e.g. 3 months"></div>
+      <div class="field"><label>Standard Fees (₹)</label><input id="courseFee" type="number" min="0" placeholder="18000"></div>
+    </div><div class="formactions"><button class="btn" onclick="saveCourse()">Save Course</button><button class="btn secondary" onclick="clearCourseForm()">Clear</button></div></div>
+    <div class="panel" style="margin-top:16px"><h2>Courses List</h2><div id="coursesTable"></div></div>
+  </section>
+
+  <section id="page-attendance" class="page hidden">
+    <div class="panel"><div class="sectionhead"><h2>Mark Daily Attendance</h2></div>
+      <div class="toolbar"><div style="flex:1;min-width:170px"><label>Date</label><input type="date" id="attDate"></div><div style="flex:1;min-width:170px"><label>Course</label><select id="attCourse" onchange="renderAttendance()"><option value="">All courses</option></select></div><button class="btn" onclick="renderAttendance()">Load Students</button></div>
+      <div id="attendanceTable"></div><div class="formactions"><button class="btn green" onclick="saveAttendance()">Save Attendance</button></div>
+    </div>
+    <div class="panel" style="margin-top:16px"><h2>Attendance Summary</h2><div id="attendanceSummary"></div></div>
+  </section>
+
+  <section id="page-fees" class="page hidden">
+    <div class="toolbar"><input id="feeSearch" placeholder="Search student..." oninput="renderFees()"><select id="feeStatus" onchange="renderFees()"><option value="">All payment statuses</option><option value="Pending">Pending balance</option><option value="Paid">Fully paid</option></select></div>
+    <div class="panel"><h2>Fees & EMI Overview</h2><div id="feesTable"></div></div>
+    <p class="hint">Record payments from each student's Edit form. Payment plan can be Full Payment, EMI, or Custom. Keep the actual payment dates and amounts up to date.</p>
+  </section>
+</main>
+</div>
+
+<div id="studentModal" class="hidden" style="position:fixed;inset:0;background:#13233b88;z-index:10;overflow:auto;padding:20px">
+  <div class="panel" style="max-width:950px;margin:20px auto">
+    <div class="sectionhead"><h2 id="modalTitle">Add Student</h2><button class="btn secondary" onclick="closeStudent()">✕ Close</button></div>
+    <form id="studentForm" onsubmit="saveStudent(event)">
+      <input type="hidden" id="studentId">
+      <div class="formgrid">
+        <div class="field"><label>Full Name *</label><input id="sName" required></div>
+        <div class="field"><label>Phone Number *</label><input id="sPhone" required type="tel"></div>
+        <div class="field"><label>Gmail / Email</label><input id="sEmail" type="email" placeholder="student@gmail.com"></div>
+        <div class="field"><label>Address</label><input id="sAddress" placeholder="House no., street, city"></div>
+        <div class="field"><label>Highest Qualification / Degree</label><input id="sDegree" placeholder="e.g. 12th, BCA, B.Tech, MCA"></div>
+        <div class="field"><label>College / University</label><input id="sCollege"></div>
+        <div class="field"><label>Course *</label><select id="sCourse" required></select></div>
+        <div class="field"><label>Batch / Timing</label><input id="sBatch" placeholder="e.g. Morning 10 AM"></div>
+        <div class="field"><label>Admission Date *</label><input id="sAdmission" type="date" required></div>
+        <div class="field"><label>Course Start Date</label><input id="sStart" type="date"></div>
+        <div class="field"><label>Course End Date</label><input id="sEnd" type="date"></div>
+        <div class="field"><label>Student Status</label><select id="sStatus"><option>Active</option><option>Completed</option><option>Dropped</option><option>On Hold</option></select></div>
+        <div class="field"><label>Total Course Fees (₹) *</label><input id="sTotal" type="number" min="0" required></div>
+        <div class="field"><label>Payment Plan</label><select id="sPlan"><option>Full Payment</option><option>EMI</option><option>Custom</option></select></div>
+        <div class="field"><label>Payment Method</label><select id="sMethod"><option>UPI</option><option>Cash</option><option>Bank Transfer</option><option>Card</option><option>Other</option></select></div>
+        <div class="field"><label>Emergency Contact (optional)</label><input id="sEmergency" type="tel"></div>
+      </div>
+      <div class="formactions"><button class="btn" type="submit">Save Student</button><button class="btn secondary" type="button" onclick="closeStudent()">Cancel</button></div>
+    </form>
+    <div id="paymentArea" class="hidden" style="border-top:1px solid var(--line);margin-top:22px;padding-top:18px">
+      <h2>Payment History</h2><div class="formgrid">
+        <div><label>Payment Amount (₹)</label><input id="pAmount" type="number" min="1"></div>
+        <div><label>Payment Date</label><input id="pDate" type="date"></div>
+        <div><label>Method</label><select id="pMethod"><option>UPI</option><option>Cash</option><option>Bank Transfer</option><option>Card</option><option>Other</option></select></div>
+      </div><div class="formactions"><button type="button" class="btn green" onclick="addPayment()">Record Payment</button></div><div id="paymentHistory" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="app.js?v=2" defer></script>
+</body>
+</html>
